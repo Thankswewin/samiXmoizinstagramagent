@@ -9,3 +9,4 @@ pydantic
 pillow
 colorama
 esprima
+user_agent
