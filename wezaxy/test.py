@@ -2,6 +2,7 @@ import asyncio, aiohttp, time, uuid, json, threading, os, random, base64
 from wezaxy.sendmessage import mesj
 from wezaxy.login import login
 from wezaxy.ai import gpt4o, gpt4o_with_image
+from wezaxy.sendgif import should_send_gif, get_random_gif, send_gif_async
 
 async def download_image_as_base64(session, image_url, headers):
     """Download an image from Instagram and return as base64."""
@@ -179,6 +180,25 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                 t.start()
                 t.join()  
                 print("message sent successfully")
+                
+                # Check if we should send a GIF reaction (15% chance when trigger detected)
+                gif_reaction = should_send_gif(str(ai))
+                if gif_reaction:
+                    giphy_id = get_random_gif(gif_reaction)
+                    if giphy_id:
+                        await asyncio.sleep(random.uniform(0.8, 2.0))  # Natural delay before GIF
+                        print(f"[Sending {gif_reaction} GIF reaction...]")
+                        await send_gif_async(
+                            session,
+                            str(mydata.get('auth')),
+                            str(my_user_id),
+                            "android-1",
+                            giphy_id,
+                            [sender],
+                            str(thread_id),
+                            str(item_id),
+                            proxy
+                        )
                 
             else:
                 pass
