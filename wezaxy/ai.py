@@ -142,30 +142,41 @@ NATURAL BEHAVIOR EXAMPLES:
     
     full_prompt = f"{system_context}\n\nTheir message: {message}\n\nYour natural human reply:"
     
-    try:
-        client = _get_client()
-        response = client.ask_question(full_prompt)
-        
-        if response:
-            # Clean up any potential leftover formatting
-            response = response.strip()
-            # Remove quotes if the AI wrapped the response in them
-            if response.startswith('"') and response.endswith('"'):
-                response = response[1:-1]
-            # Strip AI formatting patterns
-            response = response.replace('---', '').replace('--', '')
-            response = response.replace('**', '').replace('*', '')
-            response = response.replace('•', '').replace('●', '')
-            # Remove numbered list patterns like "1." at start
-            import re
-            response = re.sub(r'^\d+\.\s*', '', response)
-            # Remove multiple line breaks
-            response = re.sub(r'\n+', ' ', response).strip()
-            return response
-        else:
+    max_retries = 2
+    for attempt in range(max_retries + 1):
+        try:
+            client = _get_client()
+            response = client.ask_question(full_prompt)
+            
+            if response:
+                # Clean up any potential leftover formatting
+                response = response.strip()
+                # Remove quotes if the AI wrapped the response in them
+                if response.startswith('"') and response.endswith('"'):
+                    response = response[1:-1]
+                # Strip AI formatting patterns
+                response = response.replace('---', '').replace('--', '')
+                response = response.replace('**', '').replace('*', '')
+                response = response.replace('•', '').replace('●', '')
+                # Remove numbered list patterns like "1." at start
+                import re
+                response = re.sub(r'^\d+\.\s*', '', response)
+                # Remove multiple line breaks
+                response = re.sub(r'\n+', ' ', response).strip()
+                return response
+            else:
+                if attempt < max_retries:
+                    print(f"[Retry {attempt + 1}/{max_retries}] Empty response, retrying...")
+                    continue
+                return "hey whats up"
+        except Exception as e:
+            print(f"ChatGPT API Error (attempt {attempt + 1}): {e}")
+            if attempt < max_retries:
+                import time
+                time.sleep(0.5)  # Brief pause before retry
+                continue
             return "hey whats up"
-    except Exception as e:
-        print(f"ChatGPT API Error: {e}")
-        return "hey whats up"
+    
+    return "hey whats up"
 
 
