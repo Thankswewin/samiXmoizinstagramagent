@@ -10,3 +10,4 @@ pillow
 colorama
 esprima
 user_agent
+python-telegram-bot
