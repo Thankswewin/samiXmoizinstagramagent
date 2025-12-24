@@ -7,7 +7,8 @@ reqmodules = [
     "aiohttp", 
     "asyncio",
     "secrets",
-    "user_agent"
+    "user_agent",
+    "python-dotenv"
     
 ]
 

@@ -1,112 +1,196 @@
+# 🤖 Instagram AI DM Auto-Responder Pro
 
-# AI-Powered Instagram DM Bot
+**The Ultimate AI-Powered Instagram DM Automation Tool**
 
-This project is an **AI-powered Instagram Direct Message (DM) bot** that automatically responds to Instagram DMs using artificial intelligence. It uses GPT models to process and generate responses to the latest DM messages received.
+Automatically respond to Instagram Direct Messages with intelligent, human-like AI responses. Built for businesses, influencers, and anyone who wants 24/7 automated customer engagement.
 
-## Features
+> 📦 **Get this tool exclusively from [@samiXmoiz_bot](https://t.me/samiXmoiz_bot)**
 
-- **Automated Direct Messaging**: Automatically reads and replies to Instagram DMs.
-- **AI-Powered Responses**: Uses GPT to generate AI-based replies to messages.
-- **Proxy Support**: Allows the use of proxy servers for safe and anonymous interaction.
-- **Group Message Control**: Optionally enable or disable responses to group messages.
-- **Language Support**: Configure the language of the AI responses.
+---
 
-## Prerequisites
+## ✨ Features
 
-Before running the bot, make sure you have the following installed:
+### Core Features
+- **🤖 AI-Powered Responses** — Uses ChatGPT to generate intelligent, context-aware replies
+- **💬 Auto-Reply to DMs** — Automatically reads and responds to all incoming messages
+- **🔄 Proxy Support** — Use proxy servers for safe, anonymous operation
+- **👥 Group Message Control** — Enable or disable responses to group chats
 
-- Python 3.7 or higher
-- A valid Instagram account (and login credentials)
-- Proxy (optional)
+### Advanced Features (NEW!)
+- **📝 Knowledge Base System** — Train the AI with your business info, pricing, and FAQs
+- **⌨️ Real-Time Typing Indicator** — Shows "typing..." to recipients for a human-like experience
+- **⏱️ Dynamic Response Timing** — Simulates realistic human typing speed based on message length
+- **😎 Casual Persona Mode** — AI responds in a natural, friendly tone with emojis
+- **🔒 Secure `.env` Configuration** — Keep your credentials safe and organized
 
-## Installation
+---
 
-To set up the project, follow these steps:
+## 🎯 Who Is This For?
 
-1. **Clone the repository**:
+### 💼 Business & E-Commerce
+Perfect for brands handling customer inquiries 24/7:
+- Answer product questions automatically
+- Provide pricing and availability info
+- Handle support requests while you sleep
+- Professional yet friendly tone
 
-   ```bash
-   git clone https://github.com/wezaxy/ai-powered-instagram-dm-bot.git
-   cd ai-powered-instagram-dm-bot
-   ```
+### 💕 Dating & Social
+Ultra-human responses for personal accounts:
+- Flirty, playful conversation style
+- Natural emoji usage and lowercase text
+- Keeps conversations engaging
+- Mirrors the other person's energy
 
-2. **Install Dependencies**:
+### 📢 Marketing & Promotion
+Ideal for promoting products, crypto, or services:
+- Casual, relatable messaging
+- Creates curiosity and FOMO
+- Handles objections smoothly
+- Subtle but effective call-to-actions
 
-   Run the following command to install the required dependencies:
+> 📁 **Pre-made templates included!** Check the `templates/` folder for ready-to-use knowledge bases.
 
+---
+
+## 🚀 Quick Start
+
+### Option 1: Easy Setup Wizard (Recommended)
+
+Run the interactive setup wizard — it guides you through everything:
+
+```bash
+python setup.py
+```
+
+The wizard will:
+1. ✅ Install all dependencies
+2. ✅ Ask for your Instagram credentials
+3. ✅ Let you choose your use case (Business/Dating/Promo)
+4. ✅ Configure everything automatically
+5. ✅ Start the bot for you
+
+---
+
+### Option 2: Manual Setup
+
+If you prefer to configure manually:
    ```bash
    python install.py
    ```
 
-   This script will automatically install all the necessary libraries for you.
-
-3. **Create Configuration File**:
-
-   In the project directory, you'll need to edit the `config.json` file. This file contains the necessary settings for the bot.
-
-   **Example `config.json`**:
-
-   ```json
-   {
-     "username": "wezaxyy",
-     "password": "your password",
-     "language": "turkish",
-     "use_proxy": true,
-     "group_messages": false
-   }
+2. **Configure Your Credentials**:
+   
+   Edit the `.env` file:
+   ```env
+   IG_USERNAME=your_instagram_username
+   IG_PASSWORD=your_instagram_password
+   LANGUAGE=english
+   USE_PROXY=false
+   GROUP_MESSAGES=false
    ```
 
-   - **username**: Your Instagram username.
-   - **password**: Your Instagram password.
-   - **language**: Set the language for AI responses (e.g., "english", "turkish").
-   - **use_proxy**: Set to `true` if you want to use a proxy, otherwise `false`.
-   - **group_messages**: Set to `true` if you want the bot to respond to group messages, otherwise `false`.
-
-4. **Add Proxies (Optional)**:
-
-   If you're using proxies, you should add them in the `proxies.txt` file, one per line, in the following format:
-
+3. **Set Up Your Knowledge Base** (Optional):
+   
+   Edit `knowledge.txt` to train the AI with your info:
    ```
-   username:password@proxy_host:proxy_port
+   I run a photography business. 
+   Prices start at $50 per session.
+   We're based in NYC and available on weekends.
+   Payment via PayPal or Crypto.
    ```
 
-## Usage
+4. **Add Proxies** (Optional):
+   
+   Add proxies to `proxies.txt`:
+   ```
+   username:password@proxy_host:port
+   ```
 
-Once the setup is complete, you can start the bot by running:
+5. **Run the Bot**:
+   ```bash
+   python main.py
+   ```
 
-```bash
-python main.py
+---
+
+## ⚙️ Configuration
+
+### `.env` File Options
+
+| Variable | Description | Values |
+|----------|-------------|--------|
+| `IG_USERNAME` | Your Instagram username or email | String |
+| `IG_PASSWORD` | Your Instagram password | String |
+| `LANGUAGE` | Language for AI responses | `english`, `spanish`, etc. |
+| `USE_PROXY` | Enable proxy rotation | `true` / `false` |
+| `GROUP_MESSAGES` | Respond to group chats | `true` / `false` |
+
+### `knowledge.txt` — AI Training
+
+Write anything you want the AI to know about your business:
+- Your services and pricing
+- Business hours and location
+- FAQs and common responses
+- Your brand personality and tone
+
+The AI will use this context to provide accurate, personalized responses.
+
+---
+
+## 🎯 How It Works
+
+1. **Login** → Bot securely logs into your Instagram account
+2. **Monitor** → Continuously checks your DM inbox for new messages
+3. **Detect** → Identifies incoming messages from other users
+4. **Type** → Shows "typing..." indicator to the sender
+5. **Generate** → AI creates a personalized response using your knowledge base
+6. **Send** → Delivers the response with realistic human-like timing
+
+---
+
+## 📁 File Structure
+
+```
+├── setup.py             # 🆕 Interactive setup wizard
+├── main.py              # Main bot entry point
+├── install.py           # Dependency installer
+├── .env                 # Your credentials (keep private!)
+├── knowledge.txt        # AI training data
+├── proxies.txt          # Proxy list (optional)
+├── config.json          # Legacy config (deprecated)
+├── templates/           # Pre-made knowledge base templates
+│   ├── knowledge_business.txt    # For customer support
+│   ├── knowledge_dating.txt      # For dating/social
+│   └── knowledge_shilling.txt    # For promotion/marketing
+└── wezaxy/              # Core bot modules
+    ├── ai.py            # ChatGPT integration
+    ├── test.py          # DM processing logic
+    ├── login.py         # Instagram authentication
+    ├── sendmessage.py   # Message sending
+    └── Authorization.json # Session tokens
 ```
 
-### How the Bot Works
+---
 
-- The bot logs into your Instagram account.
-- It checks the latest messages in your Instagram DMs.
-- If the message is from you (the bot owner), it ignores it.
-- If the message is from someone else, it sends the message to an AI model (like GPT).
+## ⚠️ Important Notes
 
-### Key Files:
+- **Use a secondary account** — Recommended for safety
+- **Respect Instagram's ToS** — Avoid spammy behavior
+- **Keep credentials private** — Never share your `.env` file
+- **Use quality proxies** — Residential proxies recommended
 
-- **`install.py`**: Installs required modules and sets up the environment.
-- **`main.py`**: The main bot script that runs the DM response automation.
-- **`config.json`**: Configuration file where you set your Instagram credentials and bot preferences.
-- **`proxies.txt`**: (Optional) A file for proxy settings.
+---
 
-## Notes
+## 📞 Support & Purchase
 
-- This project is intended for educational purposes only. I am not responsible for any issues, account suspensions, or other problems that may occur.
-- Be cautious when using your personal Instagram account with this bot. It’s recommended to use a secondary account.
-- Ensure you comply with Instagram's terms of service to avoid account suspension.
-- The bot can be modified to add more features, such as handling comments or other message types.
+**Get the full package with support from:**
 
-## Contact
+🤖 **Telegram Bot:** [@samiXmoiz_bot](https://t.me/samiXmoiz_bot)
 
-For assistance or business inquiries, you can reach me on:
+---
 
-- **Discord**: wezaxy
-- **Signal**: wezaxy.43
-- **Telegram**: [@wezassy](https://t.me/wezassy)
-https://discord.gg/c44FB4PFcW
-## License
+## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This software is provided as-is for personal use. Redistribution or resale without permission is prohibited.
+
+**© 2024 samiXmoiz — All Rights Reserved**

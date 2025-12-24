@@ -1,0 +1,11 @@
+aiohttp
+requests
+pycryptodome
+python-dotenv
+fastapi
+uvicorn
+curl-cffi
+pydantic
+pillow
+colorama
+esprima

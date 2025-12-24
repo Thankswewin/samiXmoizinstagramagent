@@ -1,4 +1,2 @@
-username:password@ip:port
-username:password@ip:port
-username:password@ip:port
-username:password@ip:port
+jana6617_yahoo_com:39d6018458@109.172.81.166:30001
+jana6617_yahoo_com:39d6018458@45.191.164.102:30001

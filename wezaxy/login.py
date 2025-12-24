@@ -61,11 +61,27 @@ def login(username: str, password: str):
 
 
     enc_password = enc(password)
-    data = {"jazoest": "22565","country_codes": "[{\"country_code\":\"1\",\"source\":[\"default\"]}]","phone_id": "6ee4b60f-ca75-4412-ad1e-cd5ba98e874a","enc_password": enc_password,"username": username,"adid": "8c68106b-25ae-4657-9dd7-f4877d728c4a","guid": "ffbbe586-a8c6-4b3d-b55b-898c86ce0025","device_id": "android-a3b32e4e9a655927","google_tokens": "[]","login_attempt_count": "0"}
+    data = {"jazoest": "22565","country_codes": "[{\"country_code\":\"1\",\"source\":[\"default\"]}]","phone_id": "6ee4b60f-ca75-4412-ad1e-cd5ba98e874a","enc_password": enc_password,"username": username,"adid": "8c68106b-25ae-4657-9dd7-f4877d728c4a","guid": "ffbbe586-a8c6-4b3d-b55b-898c86ce0025","device_id": "android-a19180f55839e822","google_tokens": "[]","login_attempt_count": "0"}
 
 
     timestamp = int(time.time())
-    headers = {"Host": "i.instagram.com","Accept": "*/*","X-IG-App-Locale": "en_US","X-IG-Device-Locale": "en_US","X-IG-Mapped-Locale": "en_US","X-Pigeon-Session-Id": "UFS-68326ae0-7772-4e21-92c1-5bcbaa601370-1","X-Pigeon-Rawclienttime": str(timestamp),"X-IG-Bandwidth-Speed-KBPS": "2880.01","X-IG-Bandwidth-TotalBytes-B": "82172548","X-IG-Bandwidth-TotalTime-MS": "3917","X-IG-App-Startup-Country": "US","X-Bloks-Version-Id": "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48","X-IG-WWW-Claim": "0","X-Bloks-Is-Layout-RTL": "false","X-Bloks-Is-Panorama-Enabled": "true","X-IG-Device-ID": "ffbbe586-a8c6-4b3d-b55b-898c86ce0025","X-IG-Family-Device-ID": "6ee4b60f-ca75-4412-ad1e-cd5ba98e874a","X-IG-Android-ID": "android-a3b32e4e9a655927","X-IG-Timezone-Offset": "-14400","X-IG-Connection-Type": "WIFI","X-IG-Capabilities": "3brTvx0=","X-IG-App-ID": "567067343352427","Priority": "u=3","User-Agent": "Instagram 269.0.0.18.75 Android (26/8.0.0; 480dpi; 1080x1920; OnePlus; 6T Dev; devitron; qcom; en_US; 314665256)","Accept-Language": "en-US","X-MID": "Zubi8QABAAH3mzXqiwAsBoWjRlKM","X-FB-HTTP-Engine": "Liger","Connection": "keep-alive","X-FB-Client-IP": "True","X-FB-Server-Cluster": "True","IG-INTENDED-USER-ID": "0","X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4","X-IG-SALT-IDS": "1061223170","Authorization": "","Content-Type": "application/x-www-form-urlencoded; charset=UTF-8","Accept-Encoding": "gzip, deflate"}
+    headers = {
+        "Host": "i.instagram.com",
+        "X-IG-App-Locale": "en_US",
+        "X-IG-Device-Locale": "en_US",
+        "X-IG-Mapped-Locale": "en_US",
+        "X-Pigeon-Session-Id": f"dummy-{uuid.uuid4()}",
+        "X-Pigeon-Rawclienttime": str(timestamp),
+        "X-IG-Android-ID": "android-a19180f55839e822",
+        "X-IG-App-ID": "567067343352427",
+        "X-IG-Capabilities": "3brTv10=",
+        "X-IG-Connection-Type": "WIFI",
+        "X-IG-Device-ID": "android-a19180f55839e822",
+        "User-Agent": "Instagram 342.0.0.33.103 Android (31/12; 454dpi; 1080x2254; Xiaomi/Redmi; Redmi Note 9 Pro; joyeuse; qcom; tr_TR; 627400398)",
+        "Accept-Language": "en-US",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Accept-Encoding": "gzip, deflate"
+    }
 
 
     try:
