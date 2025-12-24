@@ -18,7 +18,7 @@ async def download_image_as_base64(session, image_url, headers):
         print(f"[Image download error: {e}]")
     return None
 
-async def send_typing_indicator(session, headers, thread_id, proxy=None):
+async def send_typing_indicator(session, headers, thread_id, sender_id=None, proxy=None):
     """
     Send a typing indicator to make the bot feel more human.
     This shows "User is typing..." on the recipient's screen.
@@ -30,13 +30,13 @@ async def send_typing_indicator(session, headers, thread_id, proxy=None):
         typing_data = {"activity_status": "1", "client_context": str(uuid.uuid4())}
         
         async with session.post(typing_url, proxy=proxy, headers=headers, data=typing_data) as res:
+            response_text = await res.text()
             if res.status == 200:
-                print("[Typing indicator sent]")
+                print(f"[Typing indicator sent] thread={thread_id} sender={sender_id}")
             else:
-                response_text = await res.text()
-                print(f"[Typing indicator status: {res.status}]")
+                print(f"[Typing indicator FAILED] thread={thread_id} sender={sender_id} status={res.status} response={response_text[:200]}")
     except Exception as e:
-        print(f"[Typing indicator error: {e}]")
+        print(f"[Typing indicator ERROR] thread={thread_id} sender={sender_id} error={e}")
 
 async def test(username, password, language, proxy, group_messages, knowledge=""):
     timestamp = int(time.time())
@@ -136,7 +136,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                     print(f"Message from {sender}: {text}")
                 
                 # Send typing indicator to show "User is typing..."
-                await send_typing_indicator(session, headers, thread_id, proxy)
+                await send_typing_indicator(session, headers, thread_id, sender_id=sender, proxy=proxy)
                 
                 # Get AI response - use multimodal if image present
                 if image_url:
