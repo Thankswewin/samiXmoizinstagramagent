@@ -5,27 +5,18 @@ Runs both bots concurrently in a single process for Railway.
 """
 
 import asyncio
-import threading
 import os
 import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def run_admin_bot_sync():
-    """Run the Telegram admin bot in a separate thread with its own event loop."""
-    import asyncio
-    
-    # Create a new event loop for this thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
+async def run_admin_bot_async():
+    """Run the Telegram admin bot asynchronously."""
     try:
-        # Import here to avoid issues
         from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
         from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
         
-        # Import admin bot functions
         from admin_bot import (
             start, status, stats, persona, knowledge, setknowledge, 
             gif, restart, persona_callback, gif_callback, handle_text,
@@ -67,8 +58,22 @@ def run_admin_bot_sync():
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
         
         print("[Admin Bot] Running!")
-        app.run_polling(drop_pending_updates=True)
         
+        # Use initialize + start + stop pattern instead of run_polling
+        # This avoids the signal handler issue
+        await app.initialize()
+        await app.start()
+        await app.updater.start_polling(drop_pending_updates=True)
+        
+        # Keep running forever
+        while True:
+            await asyncio.sleep(3600)  # Sleep for an hour, loop will be cancelled on shutdown
+            
+    except asyncio.CancelledError:
+        print("[Admin Bot] Shutting down...")
+        await app.updater.stop()
+        await app.stop()
+        await app.shutdown()
     except Exception as e:
         print(f"[Admin Bot] Error: {e}")
         import traceback
@@ -112,28 +117,28 @@ async def run_instagram_bot():
             print(f"[Instagram Bot] Error: {e}")
             await asyncio.sleep(5)
 
-def main():
-    """Start both bots."""
+async def main():
+    """Start both bots concurrently."""
     print("=" * 50)
     print("Starting Instagram DM Agent + Admin Bot")
     print("=" * 50)
     
-    # Start admin bot in a separate thread (it creates its own event loop)
+    tasks = []
+    
+    # Start admin bot if token is set
     admin_token = os.getenv('TELEGRAM_ADMIN_BOT_TOKEN')
     if admin_token:
-        admin_thread = threading.Thread(target=run_admin_bot_sync, daemon=True)
-        admin_thread.start()
-        print("[Combined] Admin bot started in background thread")
+        tasks.append(asyncio.create_task(run_admin_bot_async()))
+        print("[Combined] Admin bot task created")
     else:
         print("[Combined] No TELEGRAM_ADMIN_BOT_TOKEN, admin bot disabled")
     
-    # Small delay to let admin bot initialize
-    import time
-    time.sleep(2)
-    
-    # Run Instagram bot in main thread
+    # Start Instagram bot
     print("[Combined] Starting Instagram DM bot...")
-    asyncio.run(run_instagram_bot())
+    tasks.append(asyncio.create_task(run_instagram_bot()))
+    
+    # Wait for all tasks
+    await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
