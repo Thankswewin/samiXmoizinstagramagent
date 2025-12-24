@@ -87,7 +87,10 @@ def is_admin(user_id):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command."""
+    user = update.effective_user
+    print(f"[Admin Bot] /start from {user.username} (ID: {user.id})")
     if not is_admin(update.effective_user.id):
+        print(f"[Admin Bot] Unauthorized user: {user.id}")
         await update.message.reply_text("⛔ Unauthorized")
         return
     
@@ -115,6 +118,7 @@ Type any command to get started!
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /status command."""
+    print(f"[Admin Bot] /status from {update.effective_user.id}")
     if not is_admin(update.effective_user.id):
         await update.message.reply_text("⛔ Unauthorized")
         return
@@ -167,6 +171,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def persona(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /persona command - show persona selection."""
+    print(f"[Admin Bot] /persona from {update.effective_user.id}")
     if not is_admin(update.effective_user.id):
         await update.message.reply_text("⛔ Unauthorized")
         return
@@ -202,6 +207,7 @@ async def persona_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if persona_name == "custom":
         config['active_persona'] = 'custom'
         save_config(config)
+        print(f"[Admin Bot] Persona switched to: custom")
         await query.edit_message_text("✅ Switched to *Custom* persona.\n\nUse /setknowledge to update the knowledge base.", parse_mode='Markdown')
     else:
         templates = get_available_templates()
@@ -210,6 +216,7 @@ async def persona_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             set_knowledge_content(templates[persona_name])
             config['active_persona'] = persona_name
             save_config(config)
+            print(f"[Admin Bot] Persona switched to: {persona_name}")
             await query.edit_message_text(f"✅ Switched to *{persona_name.title()}* persona!\n\nKnowledge base updated.", parse_mode='Markdown')
         else:
             await query.edit_message_text("❌ Template not found")
