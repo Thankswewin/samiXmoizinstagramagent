@@ -11,9 +11,40 @@ from wrapper import ChatGPT
 # Global client instance (to maintain session/cookies)
 _chatgpt_client = None
 
+def _load_chatgpt_proxy():
+    """Load a proxy for ChatGPT API calls."""
+    # First try environment variable
+    proxy = os.getenv('CHATGPT_PROXY')
+    if proxy:
+        return proxy
+    
+    # Then try chatgpt_proxies.txt file
+    proxy_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'chatgpt_proxies.txt')
+    if os.path.exists(proxy_file):
+        with open(proxy_file, 'r') as f:
+            proxies = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        if proxies:
+            # Pick a random proxy from the list
+            proxy_line = random.choice(proxies)
+            # Convert format: user:pass:ip:port -> http://user:pass@ip:port
+            parts = proxy_line.split(':')
+            if len(parts) == 4:
+                return f"http://{parts[0]}:{parts[1]}@{parts[2]}:{parts[3]}"
+            elif len(parts) == 2:
+                # Already in ip:port format
+                return f"http://{proxy_line}"
+            else:
+                return proxy_line
+    return None
+
 def _get_client(proxy=None):
     global _chatgpt_client
     if _chatgpt_client is None:
+        # Load proxy if not provided
+        if proxy is None:
+            proxy = _load_chatgpt_proxy()
+        if proxy:
+            print(f"[ChatGPT using proxy: {proxy.split('@')[-1] if '@' in proxy else proxy}]")
         _chatgpt_client = ChatGPT(proxy=proxy)
     return _chatgpt_client
 
