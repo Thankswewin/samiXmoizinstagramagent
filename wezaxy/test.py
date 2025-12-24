@@ -27,14 +27,23 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     timestamp = int(time.time())
     headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8","Host": "i.instagram.com","Priority": "u=3","User-Agent": "Instagram 342.0.0.33.103 Android (31/12; 454dpi; 1080x2254; Xiaomi/Redmi; Redmi Note 9 Pro; joyeuse; qcom; tr_TR; 627400398)","X-Bloks-Is-Layout-RTL": "false","X-Bloks-Is-Prism-Enabled": "true","X-Bloks-Prism-Button-Version": "CONTROL","X-Bloks-Prism-Colors-Enabled": "true","X-Bloks-Prism-Font-Enabled": "false","X-Bloks-Version-Id": "dummy","X-FB-Connection-Type": "WIFI","X-FB-HTTP-Engine": "Tigon-HUC-Fallback","X-FB-Network-Properties": "dummy","X-IG-Android-ID": "android-a19180f55839e822","X-IG-App-ID": "567067343352427","X-IG-App-Locale": "tr_TR","X-IG-Bandwidth-Speed-KBPS": "1934.000","X-IG-Bandwidth-TotalBytes-B": "1375348","X-IG-Bandwidth-TotalTime-MS": "785","X-IG-Capabilities": "3brTv10=","X-IG-CLIENT-ENDPOINT": "DirectThreadFragment:direct_thread","X-IG-Connection-Type": "WIFI","X-IG-Device-ID": "android-a19180f55839e822","X-IG-Device-Locale": "tr_TR","X-IG-Family-Device-ID": "dummy","X-IG-Mapped-Locale": "tr_TR","X-IG-Nav-Chain": "dummy","X-IG-SALT-IDS": "dummy","X-IG-SALT-LOGGER-IDS": "dummy","X-IG-Timezone-Offset": "10800","X-IG-WWW-Claim": "dummy","X-MID": "dummy","X-Pigeon-Rawclienttime": str(timestamp),"X-Pigeon-Session-Id": f"dummy-{uuid.uuid4()}"}
 
-    with open(f'{os.path.dirname(os.path.abspath(__file__))}\\Authorization.json', 'r') as fs:
+    # Use os.path.join for cross-platform compatibility
+    auth_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Authorization.json')
+    
+    # Create Authorization.json if it doesn't exist
+    if not os.path.exists(auth_file):
+        with open(auth_file, 'w') as fs:
+            json.dump({'auth': None, 'myuserid': None}, fs, indent=4)
+    
+    with open(auth_file, 'r') as fs:
         mydata = json.load(fs)
         if mydata.get('auth') is None:
             lt = login(username, password)
             if lt[0] is True:
                 data = {'auth': lt[1], 'myuserid': str(lt[2])}
-                with open(f'{os.path.dirname(os.path.abspath(__file__))}\\Authorization.json', 'w') as fs:
+                with open(auth_file, 'w') as fs:
                     json.dump(data, fs, indent=4)
+                mydata = data
 
     headers["Authorization"] = f"{mydata.get('auth')}"
     session = aiohttp.ClientSession()
