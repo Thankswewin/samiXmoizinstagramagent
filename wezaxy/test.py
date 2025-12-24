@@ -1,7 +1,22 @@
-import asyncio, aiohttp, time, uuid, json, threading, os, random
+import asyncio, aiohttp, time, uuid, json, threading, os, random, base64
 from wezaxy.sendmessage import mesj
 from wezaxy.login import login
-from wezaxy.ai import gpt4o
+from wezaxy.ai import gpt4o, gpt4o_with_image
+
+async def download_image_as_base64(session, image_url, headers):
+    """Download an image from Instagram and return as base64."""
+    try:
+        # Use minimal headers for image download
+        img_headers = {
+            "User-Agent": headers.get("User-Agent", "Instagram 342.0.0.33.103 Android"),
+        }
+        async with session.get(image_url, headers=img_headers) as response:
+            if response.status == 200:
+                image_data = await response.read()
+                return base64.b64encode(image_data).decode('utf-8')
+    except Exception as e:
+        print(f"[Image download error: {e}]")
+    return None
 
 async def send_typing_indicator(session, headers, thread_id, proxy=None):
     """
@@ -82,8 +97,29 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                 item_id = last_item.get("item_id")
                 text = last_item.get("text", None)
                 sender = last_item.get("user_id", None)
+                item_type = last_item.get("item_type", "text")
+                
+                # Check for image/media messages
+                image_url = None
+                if item_type == "media" or item_type == "raven_media":
+                    # Regular media or disappearing media
+                    media = last_item.get("media", {}) or last_item.get("visual_media", {}).get("media", {})
+                    if media:
+                        # Try to get the best quality image
+                        image_versions = media.get("image_versions2", {}).get("candidates", [])
+                        if image_versions:
+                            image_url = image_versions[0].get("url")
+                elif item_type == "visual_media":
+                    # Another format for visual media
+                    vm = last_item.get("visual_media", {})
+                    media = vm.get("media", {})
+                    if media:
+                        image_versions = media.get("image_versions2", {}).get("candidates", [])
+                        if image_versions:
+                            image_url = image_versions[0].get("url")
 
-                if text is None:
+                # If no text AND no image, skip
+                if text is None and image_url is None:
                     await session.close()
                     return False  
 
@@ -93,14 +129,29 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                     await session.close()
                     return None
                 
-                print(f"Message from {sender}: {text}")
+                # Log the message type
+                if image_url:
+                    print(f"📷 Image from {sender}" + (f" with text: {text}" if text else ""))
+                else:
+                    print(f"Message from {sender}: {text}")
                 
                 # Send typing indicator to show "User is typing..."
                 await send_typing_indicator(session, headers, thread_id, proxy)
                 
-                # Get AI response
-                ai = await gpt4o(text, language, knowledge)
+                # Get AI response - use multimodal if image present
+                if image_url:
+                    print("[Downloading image for AI analysis...]")
+                    image_base64 = await download_image_as_base64(session, image_url, headers)
+                    if image_base64:
+                        print("[Image downloaded, sending to AI...]")
+                        ai = await gpt4o_with_image(image_base64, text or "", language, knowledge)
+                    else:
+                        # Fallback if image download fails
+                        ai = "nice pic 👀"
+                else:
+                    ai = await gpt4o(text, language, knowledge)
                 
+
                 # Add a human-like delay based on message length
                 # Average person types ~5-7 characters per second on mobile
                 # Plus some "thinking" time before they start typing

@@ -211,3 +211,89 @@ NATURAL BEHAVIOR EXAMPLES:
     return "hey whats up"
 
 
+async def gpt4o_with_image(image_base64, message, lang, knowledge=""):
+    """
+    Query ChatGPT with an image using the reverse API (multimodal).
+    
+    Args:
+        image_base64: Base64 encoded image string
+        message: Optional text message with the image (can be empty)
+        lang: Language to respond in
+        knowledge: Optional knowledge base content
+    
+    Returns:
+        The AI response string about the image
+    """
+    # Get real-world context
+    time_ctx = _get_time_context()
+    mood = _get_current_mood()
+    
+    # Build prompt for image analysis
+    if message:
+        user_text = f"They sent this image with the message: '{message}'"
+    else:
+        user_text = "They just sent this image without any text."
+    
+    system_context = f"""You are a REAL PERSON looking at an image someone sent you on Instagram DM. Respond in {lang}.
+
+CURRENT CONTEXT:
+- Today is {time_ctx['day_name']}, {time_ctx['date']}
+- Current time: {time_ctx['timestamp']}
+- Your mood: {mood['status']} ({mood['vibe']})
+
+{user_text}
+
+RULES FOR RESPONDING TO IMAGES:
+- React like a real person would to a photo
+- Keep it SHORT (1-2 sentences max)
+- Be natural and casual
+- Comment on what you actually see in the image
+- Use lowercase often, maybe one emoji max
+- Don't be formal or describe technical details
+- React with personality based on your mood
+
+Example reactions:
+- If they send a selfie: "cute pic 😊" or "looking good"
+- If it's a product: "ooh thats nice, how much was it"
+- If it's food: "damn that looks good lol"
+- If it's a meme: "lmaooo" or "haha thats actually funny"
+- If it's scenery: "wow where is that" or "thats beautiful"
+"""
+    
+    if knowledge:
+        system_context += f"\nBACKGROUND ABOUT YOU:\n{knowledge}\n"
+    
+    full_prompt = f"{system_context}\n\nLook at the image and give a natural, short reaction:"
+    
+    max_retries = 2
+    for attempt in range(max_retries + 1):
+        try:
+            client = _get_client()
+            # Use the image method
+            client.start_with_image(full_prompt, image_base64)
+            response = client.response
+            
+            if response:
+                response = response.strip()
+                if response.startswith('"') and response.endswith('"'):
+                    response = response[1:-1]
+                response = response.replace('---', '').replace('--', '')
+                response = response.replace('**', '').replace('*', '')
+                import re
+                response = re.sub(r'^\d+\.\s*', '', response)
+                response = re.sub(r'\n+', ' ', response).strip()
+                return response
+            else:
+                if attempt < max_retries:
+                    print(f"[Retry {attempt + 1}/{max_retries}] Empty image response, retrying...")
+                    continue
+                return "nice pic 👀"
+        except Exception as e:
+            print(f"ChatGPT Image API Error (attempt {attempt + 1}): {e}")
+            if attempt < max_retries:
+                import time
+                time.sleep(0.5)
+                continue
+            return "nice pic 👀"
+    
+    return "nice pic 👀"
