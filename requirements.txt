@@ -1,6 +1,6 @@
 aiohttp
 requests
-pycryptodome
+pycryptodomex
 python-dotenv
 fastapi
 uvicorn
