@@ -81,6 +81,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
             print('your ip is stuck at rate limit try again after 50 seconds')
             time.sleep(50)
 
+    print(f"[API] Inbox response status: {re.status}")
     if re.status == 200:
         data = await re.json()
         threads = data.get("inbox", {}).get("threads", [])
