@@ -83,6 +83,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     if re.status == 200:
         data = await re.json()
         threads = data.get("inbox", {}).get("threads", [])
+        print(f"[Inbox] Found {len(threads)} threads to check")
 
         for thread in threads:
             thread_id = thread.get('thread_id')
@@ -90,8 +91,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
             is_group = thread.get("is_group", False)  
             
             if is_group == True and group_messages == False:  
-                print("group message is skipped (if you don't want it to be skipped, set group_messages in config.json to true)")
-                await session.close()
+                print(f"[Skip] Group thread {thread_id} - group messages disabled")
                 continue 
             if items:
                 last_item = items[0]  
@@ -119,16 +119,16 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                         if image_versions:
                             image_url = image_versions[0].get("url")
 
-                # If no text AND no image, skip
+                # If no text AND no image, skip this thread
                 if text is None and image_url is None:
-                    await session.close()
-                    return False  
+                    print(f"[Skip] Thread {thread_id} - no text or image")
+                    continue  
 
                 my_user_id = mydata.get('myuserid', None)
 
                 if str(sender) == str(my_user_id):
-                    await session.close()
-                    return None
+                    # Last message is from us, skip to next thread
+                    continue
                 
                 # Log the message type
                 if image_url:
