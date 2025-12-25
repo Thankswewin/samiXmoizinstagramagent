@@ -71,7 +71,18 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
         
 
     async with session.get("https://i.instagram.com/api/v1/direct_v2/inbox/",proxy=proxy, headers=headers, params={"persistentBadging": "true", "use_unified_inbox": "true"})as re:
-        res = await re.json(content_type=None)
+        # Debug: log raw response
+        raw_text = await re.text()
+        print(f"[API] Status: {re.status}, Response length: {len(raw_text)}")
+        
+        try:
+            res = json.loads(raw_text) if raw_text else {}
+        except json.JSONDecodeError as e:
+            print(f"[Instagram Bot] Error: {e}")
+            print(f"[API] Raw response (first 500 chars): {raw_text[:500]}")
+            await session.close()
+            return None
+            
         if not res.get('logout_reason') is None:
             lt = login(username, password, raw_proxy)
             if lt[0] is True:
