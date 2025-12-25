@@ -82,6 +82,22 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
             time.sleep(50)
 
     print(f"[API] Inbox response status: {re.status}")
+    
+    # Handle auth failures - force re-login
+    if re.status in [401, 403]:
+        print("[Auth] Token expired or invalid, forcing re-login...")
+        lt = login(username, password)
+        if lt[0] is True:
+            data = {'auth': lt[1], 'myuserid': str(lt[2])}
+            auth_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Authorization.json')
+            with open(auth_file, 'w') as fs:
+                json.dump(data, fs, indent=4)
+            print("[Auth] Re-login successful, will use new token on next check")
+        else:
+            print("[Auth] Re-login FAILED!")
+        await session.close()
+        return None
+    
     if re.status == 200:
         data = await re.json()
         threads = data.get("inbox", {}).get("threads", [])
