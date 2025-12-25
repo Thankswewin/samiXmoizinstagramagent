@@ -41,6 +41,7 @@ async def send_typing_indicator(session, headers, thread_id, sender_id=None, pro
 
 async def test(username, password, language, proxy, group_messages, knowledge=""):
     print("[DM Bot v2.0] Starting inbox check...")  # Confirm new code is running
+    raw_proxy = proxy  # Save raw proxy for login function (without http://)
     timestamp = int(time.time())
     headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8","Host": "i.instagram.com","Priority": "u=3","User-Agent": "Instagram 342.0.0.33.103 Android (31/12; 454dpi; 1080x2254; Xiaomi/Redmi; Redmi Note 9 Pro; joyeuse; qcom; tr_TR; 627400398)","X-Bloks-Is-Layout-RTL": "false","X-Bloks-Is-Prism-Enabled": "true","X-Bloks-Prism-Button-Version": "CONTROL","X-Bloks-Prism-Colors-Enabled": "true","X-Bloks-Prism-Font-Enabled": "false","X-Bloks-Version-Id": "dummy","X-FB-Connection-Type": "WIFI","X-FB-HTTP-Engine": "Tigon-HUC-Fallback","X-FB-Network-Properties": "dummy","X-IG-Android-ID": "android-a19180f55839e822","X-IG-App-ID": "567067343352427","X-IG-App-Locale": "tr_TR","X-IG-Bandwidth-Speed-KBPS": "1934.000","X-IG-Bandwidth-TotalBytes-B": "1375348","X-IG-Bandwidth-TotalTime-MS": "785","X-IG-Capabilities": "3brTv10=","X-IG-CLIENT-ENDPOINT": "DirectThreadFragment:direct_thread","X-IG-Connection-Type": "WIFI","X-IG-Device-ID": "android-a19180f55839e822","X-IG-Device-Locale": "tr_TR","X-IG-Family-Device-ID": "dummy","X-IG-Mapped-Locale": "tr_TR","X-IG-Nav-Chain": "dummy","X-IG-SALT-IDS": "dummy","X-IG-SALT-LOGGER-IDS": "dummy","X-IG-Timezone-Offset": "10800","X-IG-WWW-Claim": "dummy","X-MID": "dummy","X-Pigeon-Rawclienttime": str(timestamp),"X-Pigeon-Session-Id": f"dummy-{uuid.uuid4()}"}
 
@@ -55,7 +56,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     with open(auth_file, 'r') as fs:
         mydata = json.load(fs)
         if mydata.get('auth') is None:
-            lt = login(username, password)
+            lt = login(username, password, raw_proxy)
             if lt[0] is True:
                 data = {'auth': lt[1], 'myuserid': str(lt[2])}
                 with open(auth_file, 'w') as fs:
@@ -72,7 +73,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     async with session.get("https://i.instagram.com/api/v1/direct_v2/inbox/",proxy=proxy, headers=headers, params={"persistentBadging": "true", "use_unified_inbox": "true"})as re:
         res = await re.json(content_type=None)
         if not res.get('logout_reason') is None:
-            lt = login(username, password)
+            lt = login(username, password, raw_proxy)
             if lt[0] is True:
                 data = {'auth': lt[1], 'myuserid': str(lt[2])}
                 with open(f'{os.path.dirname(os.path.abspath(__file__))}\\Authorization.json', 'w') as fs:
@@ -86,7 +87,7 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     # Handle auth failures - force re-login
     if re.status in [401, 403]:
         print("[Auth] Token expired or invalid, forcing re-login...")
-        lt = login(username, password)
+        lt = login(username, password, raw_proxy)
         if lt[0] is True:
             data = {'auth': lt[1], 'myuserid': str(lt[2])}
             auth_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Authorization.json')

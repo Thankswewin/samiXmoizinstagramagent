@@ -55,9 +55,18 @@ def get_pks():
         return publickeyid, publickey
 
 
-def login(username: str, password: str):
+def login(username: str, password: str, proxy: str = None):
 
     r = requests.session()
+    
+    # Set up proxy if provided
+    proxies = None
+    if proxy:
+        proxies = {
+            "http": f"http://{proxy}",
+            "https": f"http://{proxy}"
+        }
+        print(f"[Login] Using proxy: {proxy}")
 
 
     enc_password = enc(password)
@@ -85,7 +94,7 @@ def login(username: str, password: str):
 
 
     try:
-        res = r.post("https://i.instagram.com/api/v1/accounts/login/", data=data, headers=headers, verify=False)
+        res = r.post("https://i.instagram.com/api/v1/accounts/login/", data=data, headers=headers, verify=False, proxies=proxies)
         print(res.headers.get('ig-set-authorization'))
         
         if res.status_code == 200:
@@ -95,7 +104,7 @@ def login(username: str, password: str):
             print(f"Login failed: {res.text}")
             return [False]
     except requests.exceptions.RequestException as e:
-        print(e)
+        print(f"[Login] Request error: {e}")
         return [False]
 
 
