@@ -1,0 +1,46 @@
+D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\wezaxy\..\ChatGPT REVERSE API UNLIMTED\wrapper\reverse\decompiler.py:273: FutureWarning: Possible nested set at position 1
+  count = len(re.findall(target, Decompiler.decompiled))
+Traceback (most recent call last):
+  File "D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\main.py", line 44, in <module>
+    asyncio.run(main())
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\asyncio\runners.py", line 190, in run
+[DM Bot v2.0] Starting inbox check...
+[API] Status: 200, Response length: 69331
+[API] Inbox response status: 200
+[Inbox] Found 6 threads to check
+Message from 1411911279: Hi
+[Typing indicator sent] thread=340282366841710301244259481128741208331 sender=1411911279
+[ChatGPT using proxy: 109.172.81.166:30001]
+[90m[[35m21:28:30[39m[90m][39m [92m[+][39m Solved POW: gAAAAABWzQ4ODAsIlRodSBEZWMgMjUgMjAyNSAxNDoyODoyOCBHTVQtMDYwMCAoQ1NUKSIsNDI5NDcwNTE1MiwzLCJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQwLjAuMC4wIFNhZmFyaS81MzcuMzYiLG51bGwsInByb2QtMjc3MDhiY2MyYjUyZjJmZmE1NTlhOTQ3YzdiMDMyODE4ZGVjMGFmOSIsImRlLURFIiwiZGUtREUsZGUsZW4tVVMsZW4iLDEsIndlYmtpdEdldFVzZXJNZWRpYVx1MjIxMmZ1bmN0aW9uIHdlYmtpdEdldFVzZXJNZWRpYSgpIHsgW25hdGl2ZSBjb2RlXSB9IiwibG9jYXRpb24iLCJvbmRldmljZW9yaWVudGF0aW9uIiwxNTI4Ljc3OTM4Njk4NjE3NzgsIjFmNTdmYWIyLWNlNTctNGY0Ny1iM2IxLTA1Y2RlNGY0ODg0NCIsIiIsMjAsMTc2NjY5NDUwODU3MF0=~S
+[Simulating typing for 2.9s (16 chars)...]
+    return runner.run(main)
+{"action":"item_ack","status_code":"200","payload":{"client_context":"1766694518","item_id":"32589761682203940650327163260633088","timestamp":"1766694520831518","thread_id":"340282366841710301244259481128741208331","msg_id":"mid.$cAD8BXShp032hiHhP_wAAAABpTZ52"},"status":"ok"}
+message sent successfully
+           ^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\asyncio\base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\main.py", line 38, in main
+    result = await test(username, password, language, None, group_messages, knowledge)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\wezaxy\test.py", line 215, in test
+    gif_reaction = should_send_gif(str(ai))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\wezaxy\sendgif.py", line 38, in should_send_gif
+    gif_data = load_gif_library()
+               ^^^^^^^^^^^^^^^^^^
+  File "D:\PROJECTS\instagram dm tool\AI-Powered-Instagram-DM-Bot\wezaxy\sendgif.py", line 15, in load_gif_library
+    return json.load(f)
+           ^^^^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\json\__init__.py", line 293, in load
+    return loads(fp.read(),
+                 ^^^^^^^^^
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 5415: character maps to <undefined>
+Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x0000026393E41ED0>

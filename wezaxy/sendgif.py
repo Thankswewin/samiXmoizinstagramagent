@@ -11,7 +11,7 @@ def load_gif_library():
     """Load the GIF library from gifs.json"""
     gif_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'gifs.json')
     if os.path.exists(gif_file):
-        with open(gif_file, 'r') as f:
+        with open(gif_file, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {"reactions": {}, "triggers": {}, "settings": {"gif_chance": 0.15}}
 

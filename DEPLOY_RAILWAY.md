@@ -20,17 +20,44 @@ IG_PASSWORD=your_instagram_password
 LANGUAGE=english
 USE_PROXY=false
 GROUP_MESSAGES=false
+TELEGRAM_ADMIN_BOT_TOKEN=your_telegram_bot_token
 ```
 
-### Step 4: Deploy
+### Step 4: Get Persistent Auth Token (Recommended)
+To avoid Railway re-logging in on every deploy (which can trigger Instagram security):
+
+1. **Run the bot locally first:**
+   ```bash
+   python run.py
+   ```
+
+2. **Copy the token from logs:**
+   When the bot logs in, it will print:
+   ```
+   ============================================================
+   [AUTH] NEW TOKEN GENERATED - Copy to Railway env vars:
+   IG_AUTH_TOKEN=Bearer IGT:2:...
+   IG_USER_ID=12345678...
+   ============================================================
+   ```
+
+3. **Add to Railway environment variables:**
+   ```
+   IG_AUTH_TOKEN=Bearer IGT:2:...
+   IG_USER_ID=12345678...
+   ```
+
+> ⚠️ **Note:** Tokens expire eventually. If you see auth errors in Railway logs, run locally again and update the env vars.
+
+### Step 5: Deploy
 Railway will automatically:
 - Detect Python project
 - Install dependencies from `requirements.txt`
-- Run `python main.py`
+- Run `python run.py` (runs both Instagram bot and Telegram admin bot)
 
-### Step 5: Monitor
+### Step 6: Monitor
 - Check "Deployments" tab for logs
-- Bot should show "the last dm message that came in: None" when running
+- Bot should show "[Auth] Using environment variables for authentication"
 
 ---
 

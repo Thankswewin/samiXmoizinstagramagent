@@ -103,16 +103,23 @@ async def run_instagram_bot():
 
             if use_proxy:
                 with open('proxies.txt', 'r') as proxy_file:
-                    proxies = proxy_file.read().splitlines()
-                for proxy in proxies:
+                    proxies = [p.strip() for p in proxy_file.read().splitlines() if p.strip()]
+                if proxies:
+                    # Use ONE random proxy, not all of them!
+                    import random
+                    proxy = random.choice(proxies)
                     result = await test(username, password, language, proxy, group_messages, knowledge)
+                    print("the last dm message that came in:", result)
+                else:
+                    print("[Instagram Bot] No proxies found in proxies.txt")
+                    result = await test(username, password, language, None, group_messages, knowledge)
                     print("the last dm message that came in:", result)
             else:
                 result = await test(username, password, language, None, group_messages, knowledge)
                 print("the last dm message that came in:", result)
             
-            if use_proxy is False:
-                await asyncio.sleep(2)
+            # Add delay between checks to avoid rate limiting
+            await asyncio.sleep(2)
         except Exception as e:
             print(f"[Instagram Bot] Error: {e}")
             await asyncio.sleep(5)

@@ -20,6 +20,15 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agent_config.json')
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
+# Availability modes with delay ranges (min, max in seconds)
+MODES = {
+    "available": {"emoji": "🟢", "min_delay": 10, "max_delay": 60, "auto_reply": True},
+    "busy": {"emoji": "🟡", "min_delay": 120, "max_delay": 480, "auto_reply": True},
+    "away": {"emoji": "🟠", "min_delay": 600, "max_delay": 1800, "auto_reply": True},
+    "sleep": {"emoji": "🔴", "min_delay": 0, "max_delay": 0, "auto_reply": False},
+    "dnd": {"emoji": "⛔", "min_delay": 0, "max_delay": 0, "auto_reply": False}
+}
+
 # Default config
 DEFAULT_CONFIG = {
     "active_persona": "custom",
@@ -27,7 +36,11 @@ DEFAULT_CONFIG = {
     "gif_enabled": True,
     "gif_chance": 0.15,
     "started_at": None,
-    "messages_sent": 0
+    "messages_sent": 0,
+    # Availability mode settings
+    "current_mode": "available",
+    "message_queue": [],
+    "skipped_threads": []
 }
 
 def load_config():
@@ -94,10 +107,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⛔ Unauthorized")
         return
     
-    welcome = """
+    config = load_config()
+    mode = config.get('current_mode', 'available')
+    mode_emoji = MODES.get(mode, {}).get('emoji', '🟢')
+    
+    welcome = f"""
 🤖 *Instagram Agent Admin Panel*
 
+*Current Mode:* {mode_emoji} {mode.title()}
+
 Available commands:
+
+🎯 *Availability*
+/mode - Switch availability mode
+/queue - View pending messages
+/wakeup - Reply to all queued
 
 📊 *Status & Info*
 /status - View current config
@@ -329,6 +353,153 @@ async def gif_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
+async def mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /mode command - show/switch availability mode."""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Unauthorized")
+        return
+    
+    config = load_config()
+    current = config.get('current_mode', 'available')
+    
+    # Build keyboard with all modes
+    keyboard = []
+    for mode_name, mode_info in MODES.items():
+        emoji = "✅" if mode_name == current else mode_info['emoji']
+        label = f"{emoji} {mode_name.title()}"
+        if mode_info['auto_reply']:
+            label += f" ({mode_info['min_delay']//60}-{mode_info['max_delay']//60}m)"
+        keyboard.append([InlineKeyboardButton(label, callback_data=f"mode_{mode_name}")])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    current_info = MODES.get(current, {})
+    status_text = f"""
+🎯 *Availability Mode*
+
+Current: {current_info.get('emoji', '🟢')} *{current.title()}*
+Auto-reply: {'✅ On' if current_info.get('auto_reply', True) else '❌ Off'}
+Delay: {current_info.get('min_delay', 0)//60}-{current_info.get('max_delay', 0)//60} minutes
+
+Select a mode:
+"""
+    await update.message.reply_text(status_text, reply_markup=reply_markup, parse_mode='Markdown')
+
+async def mode_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle mode selection callback."""
+    query = update.callback_query
+    await query.answer()
+    
+    if not is_admin(query.from_user.id):
+        return
+    
+    mode_name = query.data.replace("mode_", "")
+    if mode_name not in MODES:
+        await query.edit_message_text("❌ Invalid mode")
+        return
+    
+    config = load_config()
+    config['current_mode'] = mode_name
+    save_config(config)
+    
+    mode_info = MODES[mode_name]
+    print(f"[Admin Bot] Mode switched to: {mode_name}")
+    
+    if mode_info['auto_reply']:
+        desc = f"Replies in {mode_info['min_delay']//60}-{mode_info['max_delay']//60} minutes"
+    else:
+        desc = "Messages will be queued"
+    
+    await query.edit_message_text(
+        f"✅ Mode changed to {mode_info['emoji']} *{mode_name.title()}*\n\n{desc}",
+        parse_mode='Markdown'
+    )
+
+async def queue(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /queue command - show pending messages."""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Unauthorized")
+        return
+    
+    config = load_config()
+    message_queue = config.get('message_queue', [])
+    
+    if not message_queue:
+        await update.message.reply_text("📭 *Queue Empty*\n\nNo pending messages.", parse_mode='Markdown')
+        return
+    
+    queue_text = f"📬 *Message Queue* ({len(message_queue)} pending)\n\n"
+    for i, msg in enumerate(message_queue[:10]):  # Show max 10
+        user = msg.get('user', 'Unknown')
+        text = msg.get('message', '')[:30] + "..." if len(msg.get('message', '')) > 30 else msg.get('message', '')
+        reply_at = msg.get('reply_at', 'Unknown')
+        queue_text += f"{i+1}. *{user}*: {text}\n   ⏰ Reply at: {reply_at}\n\n"
+    
+    if len(message_queue) > 10:
+        queue_text += f"_...and {len(message_queue) - 10} more_"
+    
+    await update.message.reply_text(queue_text, parse_mode='Markdown')
+
+async def wakeup(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /wakeup command - process all queued messages immediately."""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Unauthorized")
+        return
+    
+    config = load_config()
+    message_queue = config.get('message_queue', [])
+    queue_count = len(message_queue)
+    
+    if queue_count == 0:
+        await update.message.reply_text("📭 No messages in queue.")
+        return
+    
+    # Mark all messages to be replied immediately
+    from datetime import datetime
+    now = datetime.now().isoformat()
+    for msg in message_queue:
+        msg['reply_at'] = now
+    
+    config['message_queue'] = message_queue
+    save_config(config)
+    
+    await update.message.reply_text(
+        f"⏰ *Waking up!*\n\n{queue_count} messages will be replied to shortly.",
+        parse_mode='Markdown'
+    )
+
+async def skip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /skip command - skip a queued message."""
+    if not is_admin(update.effective_user.id):
+        await update.message.reply_text("⛔ Unauthorized")
+        return
+    
+    if not context.args:
+        await update.message.reply_text("Usage: /skip <queue_number>\n\nUse /queue to see message numbers.")
+        return
+    
+    try:
+        idx = int(context.args[0]) - 1
+    except ValueError:
+        await update.message.reply_text("❌ Invalid number")
+        return
+    
+    config = load_config()
+    message_queue = config.get('message_queue', [])
+    
+    if idx < 0 or idx >= len(message_queue):
+        await update.message.reply_text("❌ Message not found in queue")
+        return
+    
+    removed = message_queue.pop(idx)
+    config['message_queue'] = message_queue
+    save_config(config)
+    
+    await update.message.reply_text(
+        f"✅ Skipped message from *{removed.get('user', 'Unknown')}*",
+        parse_mode='Markdown'
+    )
+
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /restart command - force re-login."""
     if not is_admin(update.effective_user.id):
@@ -370,10 +541,16 @@ def main():
     app.add_handler(CommandHandler("setknowledge", setknowledge))
     app.add_handler(CommandHandler("gif", gif))
     app.add_handler(CommandHandler("restart", restart))
+    # Availability mode commands
+    app.add_handler(CommandHandler("mode", mode))
+    app.add_handler(CommandHandler("queue", queue))
+    app.add_handler(CommandHandler("wakeup", wakeup))
+    app.add_handler(CommandHandler("skip", skip))
     
     # Callback handlers
     app.add_handler(CallbackQueryHandler(persona_callback, pattern="^persona_"))
     app.add_handler(CallbackQueryHandler(gif_callback, pattern="^gif_"))
+    app.add_handler(CallbackQueryHandler(mode_callback, pattern="^mode_"))
     
     # Text handler for setknowledge flow
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
