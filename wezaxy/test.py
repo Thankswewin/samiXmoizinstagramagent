@@ -108,6 +108,113 @@ def get_ready_messages():
     
     return ready
 
+# GitHub Gist for dynamic token storage (no Railway redeploy needed!)
+GIST_ID = os.getenv('GITHUB_GIST_ID')  # Will be set after first upload
+GITHUB_TOKEN = os.getenv('GITHUB_GIST_TOKEN')
+
+async def upload_token_to_gist(auth_token, user_id):
+    """Upload Instagram token to GitHub Gist for Railway to fetch."""
+    global GIST_ID
+    import aiohttp
+    
+    github_token = os.getenv('GITHUB_GIST_TOKEN')
+    if not github_token:
+        print("[Gist] No GITHUB_GIST_TOKEN set, skipping upload")
+        return False
+    
+    gist_content = json.dumps({
+        "auth": auth_token,
+        "myuserid": str(user_id),
+        "updated_at": datetime.now().isoformat()
+    })
+    
+    headers = {
+        "Authorization": f"Bearer {github_token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    
+    gist_id = os.getenv('GITHUB_GIST_ID')
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            if gist_id:
+                # Update existing gist
+                url = f"https://api.github.com/gists/{gist_id}"
+                payload = {
+                    "files": {
+                        "instagram_token.json": {"content": gist_content}
+                    }
+                }
+                async with session.patch(url, headers=headers, json=payload) as resp:
+                    if resp.status == 200:
+                        print(f"[Gist] ✅ Token uploaded to Gist {gist_id}")
+                        return True
+                    else:
+                        error = await resp.text()
+                        print(f"[Gist] Update failed: {resp.status} - {error[:200]}")
+            else:
+                # Create new gist
+                url = "https://api.github.com/gists"
+                payload = {
+                    "description": "Instagram DM Bot Token (auto-updated)",
+                    "public": False,
+                    "files": {
+                        "instagram_token.json": {"content": gist_content}
+                    }
+                }
+                async with session.post(url, headers=headers, json=payload) as resp:
+                    if resp.status == 201:
+                        data = await resp.json()
+                        new_gist_id = data.get("id")
+                        print(f"[Gist] ✅ Created new Gist: {new_gist_id}")
+                        print(f"[Gist] ⚠️ Add this to Railway env vars: GITHUB_GIST_ID={new_gist_id}")
+                        GIST_ID = new_gist_id
+                        return True
+                    else:
+                        error = await resp.text()
+                        print(f"[Gist] Create failed: {resp.status} - {error[:200]}")
+    except Exception as e:
+        print(f"[Gist] Error: {e}")
+    
+    return False
+
+async def fetch_token_from_gist():
+    """Fetch Instagram token from GitHub Gist (used by Railway)."""
+    import aiohttp
+    
+    gist_id = os.getenv('GITHUB_GIST_ID')
+    github_token = os.getenv('GITHUB_GIST_TOKEN')
+    
+    if not gist_id:
+        print("[Gist] No GITHUB_GIST_ID set")
+        return None
+    
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    if github_token:
+        headers["Authorization"] = f"Bearer {github_token}"
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            url = f"https://api.github.com/gists/{gist_id}"
+            async with session.get(url, headers=headers) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    content = data.get("files", {}).get("instagram_token.json", {}).get("content")
+                    if content:
+                        token_data = json.loads(content)
+                        print(f"[Gist] ✅ Fetched token (updated: {token_data.get('updated_at', 'unknown')})")
+                        return token_data
+                else:
+                    print(f"[Gist] Fetch failed: {resp.status}")
+    except Exception as e:
+        print(f"[Gist] Fetch error: {e}")
+    
+    return None
+
 # Track when we last sent a token alert (avoid spam)
 _last_token_alert = None
 
@@ -460,8 +567,13 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
     env_auth = os.getenv('IG_AUTH_TOKEN')
     env_userid = os.getenv('IG_USER_ID')
     
-    if env_auth and env_userid:
-        # Use environment variables (Railway deployment)
+    # First, try fetching from Gist (dynamic token without redeploy)
+    gist_token = await fetch_token_from_gist()
+    if gist_token and gist_token.get('auth'):
+        mydata = {'auth': gist_token['auth'], 'myuserid': gist_token['myuserid']}
+        print("[Auth] ✅ Using token from GitHub Gist (dynamic sync)")
+    elif env_auth and env_userid:
+        # Use environment variables (Railway deployment fallback)
         mydata = {'auth': env_auth, 'myuserid': env_userid}
         print("[Auth] Using environment variables for authentication")
     else:
@@ -488,8 +600,8 @@ async def test(username, password, language, proxy, group_messages, knowledge=""
                     print(f"IG_AUTH_TOKEN={lt[1]}")
                     print(f"IG_USER_ID={lt[2]}")
                     print("="*60 + "\n")
-                    # Auto-sync to Railway and notify via Telegram
-                    await sync_token_to_railway(lt[1], str(lt[2]))
+                    # Auto-sync to Gist (Railway will fetch from there - no redeploy!)
+                    await upload_token_to_gist(lt[1], str(lt[2]))
 
     headers["Authorization"] = f"{mydata.get('auth')}"
     session = aiohttp.ClientSession()
